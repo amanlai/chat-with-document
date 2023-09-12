@@ -27,22 +27,26 @@ def get_user_input():
     chunk_size = st.number_input('Chunk size:', min_value=100, max_value=2048, value=512, on_change=clear_history)
     # k input widget
     k = st.number_input('k', min_value=1, max_value=20, value=3, on_change=clear_history)
+    # ask whether to save data
+    save_data = st.selectbox("Save data on disk:", ['Yes', 'No'])
+    save_data = True if save_data == 'Yes' else False
     # add data button widget
     add_data = st.button('Add Data', on_click=clear_history)
-    return chunk_size, k, uploaded_file, add_data
+    return chunk_size, k, uploaded_file, save_data, add_data
 
 
-def build_data(uploaded_file, chunk_size):
+def build_data(uploaded_file, chunk_size, save_data):
     """
     Process data on the sidebar
     """
     with st.spinner('Reading, splitting and embedding file...'):
 
-        # writing the file from RAM to the current directory on disk
-        bytes_data = uploaded_file.read()
-        file_name = os.path.join('../data/sample_data/', uploaded_file.name)
-        with open(file_name, 'wb') as f:
-            f.write(bytes_data)
+        if save_data:
+            # writing the file from RAM to the current directory on disk
+            bytes_data = uploaded_file.read()
+            file_name = os.path.join('../data/sample_data/', uploaded_file.name)
+            with open(file_name, 'wb') as f:
+                f.write(bytes_data)
 
         process_data = ProcessData(file_name, chunk_size=chunk_size)
         st.write(f'Chunk size: {chunk_size}, Chunks: {len(process_data.chunks)}')
@@ -97,10 +101,10 @@ def create_sidebar():
         if api_key:
             os.environ['OPENAI_API_KEY'] = api_key
 
-        chunk_size, k, uploaded_file, add_data = get_user_input()
+        chunk_size, k, uploaded_file, save_data, add_data = get_user_input()
 
         if uploaded_file and add_data: # if the user browsed a file
-            build_data(uploaded_file, chunk_size)
+            build_data(uploaded_file, chunk_size, save_data)
 
     return k
 
