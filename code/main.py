@@ -9,6 +9,14 @@ def clear_history():
     st.session_state.pop('history', None)
 
 
+# clear the input field upon hitting Enter
+def clear_input():
+    st.session_state['latest_question'] = st.session_state['input_field']
+    st.session_state['input_field'] = ''
+    
+
+
+
 def get_user_input():
     """
     Get file, chunk_size and k as user input on the sidebar
@@ -28,7 +36,7 @@ def build_data(uploaded_file, chunk_size):
     """
     Process data on the sidebar
     """
-    with st.spinner('Reading, chunking and embedding file...'):
+    with st.spinner('Reading, splitting and embedding file...'):
 
         # writing the file from RAM to the current directory on disk
         bytes_data = uploaded_file.read()
@@ -43,19 +51,19 @@ def build_data(uploaded_file, chunk_size):
         st.write(f"Embedding Cost: ${cost['Embedding Cost in USD']:.4f}")
 
         # saving the vector store in the streamlit session state (to be persistent between reruns)
-        st.session_state.vector_store = process_data.vector_store
+        st.session_state['vector_store'] = process_data.vector_store
         st.success('File uploaded, chunked and embedded successfully.')
 
 
 def collect_history(last_qa):
 
     # prepend the latest Q/A to the Q/A history
-    st.session_state.history = f"{last_qa} \n {'-' * 100} \n {st.session_state.get('history', '')}"
+    st.session_state['history'] = f"{last_qa} \n {'-' * 100} \n {st.session_state.get('history', '')}"
 
     # text area widget for the Q/A history
     st.text_area(
         label='Q/A History', 
-        value=st.session_state.history, 
+        value=st.session_state['history'], 
         key='history', 
         height=400
         )
@@ -64,7 +72,7 @@ def collect_history(last_qa):
 def ask_question(question, k, history=True):
     # continue only if there's a vector store
     if 'vector_store' in st.session_state:
-        vector_store = st.session_state.vector_store
+        vector_store = st.session_state['vector_store']
         answer = QA.get_answer(vector_store, question, k=k)
 
         # text area widget for the answer
@@ -75,6 +83,7 @@ def ask_question(question, k, history=True):
         # the current question and answer
         last_qa = f'Q: {question} \nA: {answer}'
 
+        # only show history if history=True
         if history:
             collect_history(last_qa)
 
@@ -95,8 +104,9 @@ def create_sidebar():
 
     return k
 
+    
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 
     # loading the OpenAI api key from .env
     load_dotenv(find_dotenv(), override=True)
@@ -105,9 +115,16 @@ if __name__ == "__main__":
     st.subheader('Q/A on Private Documents')
     k = create_sidebar()
 
-    # user's question text input widget
-    question = st.text_input('Ask a question based on the content of the file you uploaded:')
-    if question: # if the user entered a question and hit enter
+    # user's question input widget
+    # the input field clears after hitting Enter
+    st.text_input(
+        'Ask a question based on the content of the file you uploaded:', 
+        key='input_field',
+        on_change=clear_input)
+    question = st.session_state.get('latest_question', '')
+
+    # proceed only if the user entered a question
+    if question:
         ask_question(question, k)
 
 # run the app: streamlit run main.py
