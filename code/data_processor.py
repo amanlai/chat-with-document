@@ -25,7 +25,7 @@ class ProcessData:
         """
         name, extension = os.path.splitext(self.file)
         if extension in ('.pdf', '.docx', '.txt'):
-            print(f'Loading {self.file}')
+            # print(f'Loading {self.file}')
             if extension == '.pdf':
                 loader = PyPDFLoader(self.file)
             elif extension == '.docx':
@@ -33,8 +33,7 @@ class ProcessData:
             else:
                 loader = TextLoader(self.file, encoding='utf-8')
         else:
-            print('Document format is not supported!')
-            return None
+            raise ValueError('Document format is not supported!')
 
         data = loader.load()
         return data
