@@ -14,11 +14,10 @@ def get_answer(vector_store, question, model='gpt-3.5-turbo', k=3):
     return answer
 
 
-def ask_with_memory(vector_store, question, model='gpt-3.5-turbo', chat_history=[], k=5):
+def get_answer_with_memory(vector_store, question, model='gpt-3.5-turbo', chat_history=[], k=5):
 
     llm = ChatOpenAI(model=model, temperature=0.1)
     retriever = vector_store.as_retriever(search_type="similarity", search_kwargs={"k": k})
     crc = ConversationalRetrievalChain.from_llm(llm, retriever)
     result = crc({"question": question, "chat_history": chat_history})
-    chat_history.append((question, result["answer"]))
-    return result, chat_history
+    return result

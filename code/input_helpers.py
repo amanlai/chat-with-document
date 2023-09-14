@@ -29,9 +29,10 @@ def get_user_input():
     k = st.slider("Top-k:", value=3, min_value=1, max_value=20, step=1, on_change=clear_history)
     # ask whether to save data
     # save_data = st.selectbox("Save data on disk:", ['Yes', 'No'], on_change=clear_history) == 'Yes'
+    with_memory = st.selectbox("With memory:", ['Yes', 'No'], on_change=clear_history) == 'Yes'
     # add data button widget
     add_data = st.button('Add Data', on_click=clear_history)
-    return chunk_size, k, uploaded_file, add_data
+    return chunk_size, k, uploaded_file, add_data, with_memory
 
 
 
@@ -43,12 +44,12 @@ def create_sidebar():
         if api_key:
             os.environ['OPENAI_API_KEY'] = api_key
 
-        chunk_size, k, uploaded_file, add_data = get_user_input()
+        chunk_size, k, uploaded_file, add_data, with_memory = get_user_input()
 
         if uploaded_file and add_data: # if the user browsed a file
             build_data(uploaded_file, chunk_size)
 
-    return k
+    return k, with_memory
 
 
 
@@ -63,10 +64,11 @@ def build_data(uploaded_file, chunk_size):
         # file_name = os.path.join('../data/sample_data/', uploaded_file.name)
         # with open(file_name, 'wb') as f:
         #     f.write(bytes_data)
-        
+
         with NamedTemporaryFile(delete=False) as tmp:
+            ext = os.path.splitext(uploaded_file.name)[1]
             tmp.write(uploaded_file.read())
-            process_data = ProcessData(tmp.name, chunk_size=chunk_size)
+            process_data = ProcessData(tmp.name, ext, chunk_size=chunk_size)
         os.remove(tmp.name)
         
         st.write(f'Chunk size: {chunk_size}, Chunks: {len(process_data.chunks)}')

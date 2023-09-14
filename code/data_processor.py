@@ -9,21 +9,20 @@ from langchain.vectorstores import Chroma
 
 class ProcessData:
 
-    def __init__(self, file, chunk_size=256, chunk_overlap=10):
+    def __init__(self, file, extension, chunk_size=256, chunk_overlap=10):
         
         load_dotenv(find_dotenv(), override=True)
         self.file = file
-        self.data = self.load_document()
+        self.data = self.load_document(extension)
         self.chunks = self.chunk_data(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
         self.embedding_cost = self.compute_embedding_cost()
         self.vector_store = self.build_embeddings()
 
 
-    def load_document(self):
+    def load_document(self, extension):
         """
         Load PDF, DOCX or TXT files as LangChain Documents
         """
-        name, extension = os.path.splitext(self.file)
         if extension in ('.pdf', '.docx', '.txt'):
             # print(f'Loading {self.file}')
             if extension == '.pdf':

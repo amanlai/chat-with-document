@@ -1,25 +1,11 @@
 import os
 import streamlit as st
 from data_processor import load_dotenv, find_dotenv
-
-from input_helpers import (
-    create_sidebar, 
-    get_user_input, 
-#    clear_input, 
-    build_data
-    )
-from output_helpers import ask_question
+from input_helpers import create_sidebar
+from output_helpers import ask_question, ask_question_with_memory
 
 
     
-
-
-
-
-
-
-    
-
 if __name__ == '__main__':
 
     # loading the OpenAI api key from .env
@@ -27,7 +13,7 @@ if __name__ == '__main__':
 
     st.image('../data/img.png')
     st.subheader('Q/A on Private Documents')
-    k = create_sidebar()
+    k, with_memory = create_sidebar()
 
     # user's question input widget
     # the input field clears after hitting Enter
@@ -41,6 +27,9 @@ if __name__ == '__main__':
 
     # proceed only if the user entered a question
     if question:
-        ask_question(question, k)
+        if with_memory:
+            ask_question_with_memory(question, k)
+        else:
+            ask_question(question, k)
 
 # run the app: streamlit run main.py
