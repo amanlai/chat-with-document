@@ -1,6 +1,6 @@
 import os
 import streamlit as st
-from data_processor import load_dotenv, find_dotenv
+from dotenv import load_dotenv, find_dotenv
 from input_helpers import create_sidebar
 from output_helpers import ask_question, ask_question_with_memory
 

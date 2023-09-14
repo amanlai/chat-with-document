@@ -59,12 +59,7 @@ def build_data(uploaded_file, chunk_size):
     """
     with st.spinner('Reading, splitting and embedding file...'):
 
-        # writing the file from RAM to the current directory on disk
-        # bytes_data = uploaded_file.read()
-        # file_name = os.path.join('../data/sample_data/', uploaded_file.name)
-        # with open(file_name, 'wb') as f:
-        #     f.write(bytes_data)
-
+        # writing the file from RAM to a temporary file that is deleted later
         with NamedTemporaryFile(delete=False) as tmp:
             ext = os.path.splitext(uploaded_file.name)[1]
             tmp.write(uploaded_file.read())
